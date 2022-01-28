@@ -1,26 +1,28 @@
 package encryptdecrypt;
 
-import java.util.Scanner;
+import java.util.List;
 
 public class Main {
+    static String mode = "enc";
+    static int key = 0;
+    static String data = "";
+
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String mode = scanner.nextLine().trim();
-        String message = scanner.nextLine();
-        int key = scanner.nextInt();
-        scanner.close();
+        List<String> argsList = List.of(args);
+        setParams(argsList);
 
         switch (mode) {
             case "enc":
-                System.out.println(encrypt(message, key));
+                System.out.println(encrypt(data, key));
                 break;
             case "dec":
-                System.out.println(decrypt(message, key));
+                System.out.println(decrypt(data, key));
                 break;
             default:
                 System.out.println("Wrong input!");
         }
     }
+
 
     public static String encrypt(String message, int key) {
         StringBuilder sb = new StringBuilder();
@@ -41,6 +43,33 @@ public class Main {
 
     public static String decrypt(String message, int key) {
         return encrypt(message, -key);
+    }
+
+    public static void setParams(List<String> argsList) {
+        if (argsList.contains("-mode")) {
+            try {
+                mode = argsList.get(argsList.indexOf("-mode") + 1);
+                if (!"dec".equals(mode))
+                    mode = "enc";
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println("Wrong mode input");
+            }
+        }
+        if (argsList.contains("-key")) {
+            try {
+                key = Integer.parseInt(argsList.get(argsList.indexOf("-key") + 1));
+            } catch (IndexOutOfBoundsException | NumberFormatException e) {
+                System.out.println("Wrong key input");
+            }
+        }
+
+        if (argsList.contains("-data")) {
+            try {
+                data = argsList.get(argsList.indexOf("-data") + 1);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println("Wrong data input");
+            }
+        }
     }
 
 }
