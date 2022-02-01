@@ -12,50 +12,37 @@ public class Main {
     public static int key = 0;
     public static String data = "";
     public static String outputFile = null;
+    public static String algorithm = "shift";
 
 
     public static void main(String[] args) {
         setParams(List.of(args));
+        Cryptographer cryptographer = null;
 
-        if (!"dec".equals(mode) && !"enc".equals(mode)) {
-            System.out.println("Wrong input!");
-        } else if ("dec".equals(mode)) {
-            key = -key;
+        switch (algorithm) {
+            case "unicode":
+                cryptographer = new Cryptographer(new UnicodeAlgorithm(), mode);
+                break;
+            case "shift":
+                cryptographer = new Cryptographer(new ShiftAlgorithm(), mode);
+                break;
+            default:
+                System.out.println("Error occurred! Wrong input for algorithm!");
         }
 
-        if (outputFile == null) {
-            System.out.println(encrypt(data, key));
-        } else {
+        if (outputFile == null && cryptographer != null) {
+            System.out.println(cryptographer.runEncryption(data, key));
+        } else if (cryptographer != null) {
             File file = new File(outputFile);
             try (FileWriter writer = new FileWriter(file)) {
-                writer.write(encrypt(data, key));
+                writer.write(cryptographer.runEncryption(data, key));
             } catch (IOException e) {
                 System.out.println("Error occurred! Some problems with output file");
             }
-        }
+        } else
+            System.out.println("Program terminated! Please try again!");
     }
 
-
-    public static String encrypt(String message, int key) {
-        StringBuilder sb = new StringBuilder();
-        final int asciiStart = 32;
-        final int asciiEnd = 126;
-        final int asciiShift = 95;
-        int ascii;
-        for (int i = 0; i < message.length(); i++) {
-            ascii = message.charAt(i) + key;
-            if (ascii > asciiEnd)
-                ascii = message.charAt(i) + key - asciiShift;
-            if (ascii < asciiStart)
-                ascii = message.charAt(i) + key + asciiShift;
-            sb.append((char) ascii);
-        }
-        return sb.toString();
-    }
-
-//    public static String decrypt(String message, int key) {
-//        return encrypt(message, -key);
-//    }
 
     public static void setParams(List<String> argsList) {
         if (argsList.contains("-mode")) {
@@ -98,12 +85,18 @@ public class Main {
                 System.out.println(e.getMessage());
             }
         }
-
         if (argsList.contains("-out")) {
             try {
                 outputFile = argsList.get(argsList.indexOf("-out") + 1);
             } catch (IndexOutOfBoundsException e) {
                 System.out.println("Error occurred! Please enter name for output file");
+            }
+        }
+        if (argsList.contains("-alg")) {
+            try {
+                algorithm = argsList.get(argsList.indexOf("-alg") + 1);
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("Empty input for -alg... Default to \"shift\"");
             }
         }
     }
